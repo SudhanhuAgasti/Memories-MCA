@@ -1,19 +1,51 @@
-
 <!doctype html>
 <html lang="en">
 
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Image Spiral</title>
+  <title>Beyond Classroom — 3D Spiral Archive</title>
 
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     html,
     body {
       margin: 0;
       height: 100%;
       overflow: hidden;
-      background: #ffffff;
+      background: #08080a;
+      color: #ffffff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    :root {
+      --mouse-x: 50vw;
+      --mouse-y: 50vh;
+    }
+
+    /* Ambient Interactive Radial Glow */
+    .ambient-glow {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(circle 750px at var(--mouse-x) var(--mouse-y), rgba(88, 101, 242, 0.18), rgba(168, 85, 247, 0.09), transparent 70%);
+      z-index: 0;
+      transition: background 0.15s ease-out;
+    }
+
+    /* Subtle Cinematic Film Grain */
+    .grain-overlay {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.035;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+      z-index: 2;
     }
 
     canvas {
@@ -21,6 +53,139 @@
       width: 100%;
       height: 100%;
       touch-action: none;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Luxury Minimal UI Overlay */
+    .ui-container {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 24px 32px;
+    }
+
+    .ui-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand-title {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .tag-badge {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: rgba(255, 255, 255, 0.75);
+    }
+
+    .status-badge {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.6);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .pulse-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #34d399;
+      box-shadow: 0 0 10px #34d399;
+      animation: pulseGlow 2s infinite ease-in-out;
+    }
+
+    @keyframes pulseGlow {
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.4;
+        transform: scale(0.85);
+      }
+    }
+
+    .ui-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .nav-hint {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 18px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      color: rgba(255, 255, 255, 0.8);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .nav-hint svg {
+      opacity: 0.7;
+    }
+
+    .counter-display {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      color: rgba(255, 255, 255, 0.85);
+      padding: 6px 14px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    @media (max-width: 640px) {
+      .ui-container {
+        padding: 18px 20px;
+      }
+
+      .brand-title {
+        font-size: 11px;
+      }
+
+      .status-badge {
+        display: none;
+      }
+
+      .nav-hint {
+        font-size: 10px;
+        padding: 6px 12px;
+      }
     }
   </style>
 
@@ -31,6 +196,34 @@
 
 <body>
 
+  <div class="ambient-glow" id="ambientGlow"></div>
+  <div class="grain-overlay"></div>
+
+  <div class="ui-container">
+    <header class="ui-header">
+      <div class="brand-title">
+        <span>BEYOND CLASSROOM</span>
+        <span class="tag-badge">ARCHIVE</span>
+      </div>
+      <div class="status-badge">
+        <span class="pulse-dot"></span>
+        <span>INTERACTIVE 3D SPIRAL</span>
+      </div>
+    </header>
+
+    <footer class="ui-footer">
+      <div class="nav-hint">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+          stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="7 13 12 18 17 13"></polyline>
+          <polyline points="7 6 12 11 17 6"></polyline>
+        </svg>
+        <span>SCROLL OR DRAG TO EXPLORE</span>
+      </div>
+      <div class="counter-display" id="photoCounter">001 / 165</div>
+    </footer>
+  </div>
+
   <canvas id="spiral"></canvas>
 
   <script>
@@ -40,202 +233,206 @@
     // PASTE YOUR IMAGE URLS HERE
     // =====================================
 
-    const imageUrls = {    
-  a1: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890982/1778439008730_result.jpg",
-  a2: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890981/1778438730829_result.jpg",
-  a3: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890981/20260508_222152_result.jpg",
-  a4: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890980/20260508_222140_result.jpg",
-  a5: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890979/20260508_222101_result.jpg",
-  a6: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890978/20260508_220915_result.jpg",
-  a7: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890978/20260508_222040_result.jpg",
-  a8: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890977/20260508_220638_result.jpg",
-  a9: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890976/20260508_220635_result.jpg",
-  a10: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890975/20260508_220542_result.jpg",
-  a11: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890883/20260508_220533_result.jpg",
-  a12: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890869/20260508_220518_result.jpg",
-  a13: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890867/20260508_220505_result.jpg",
-  a14: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890867/20260508_220447_result.jpg",
-  a15: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890866/20260508_220434_result.jpg",
-  a16: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890865/20260508_220432_result.jpg",
-  a17: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890864/20260508_220406_result.jpg",
-  a18: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890863/20260508_220404_result.jpg",
-  a19: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890862/20260508_220358_result.jpg",
-  a20: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890861/20260508_220340_result.jpg",
-  a21: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890861/20260508_220331_result.jpg",
-  a22: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890860/20260508_220017_result.jpg",
-  a23: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890859/20260508_212139_result.jpg",
-  a24: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890858/20260508_212119_result.jpg",
-  a25: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890857/20260508_212048_result.jpg",
-  a26: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890856/20260508_203355_result.jpg",
-  a27: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890855/20260508_203158_result.jpg",
-  a28: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890855/20260508_191026_result.jpg",
-  a29: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890853/20260508_190847_result.jpg",
-  a30: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890853/20260508_185856_result.jpg",
-  a31: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890852/20260508_185848_result.jpg",
-  a32: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890851/20260508_185737_result.jpg",
-  a33: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890851/20260508_185619_result.jpg",
-  a34: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890851/20260508_184350_result.jpg",
-  a35: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890850/20260508_184342_result.jpg",
-  a36: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890850/20260508_183957_result.jpg",
-  a37: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890849/20260508_183938_result.jpg",
-  a38: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890849/20260508_183928_result.jpg",
-  a39: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890848/20260508_183756_result.jpg",
-  a40: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890848/20260508_183735_result.jpg",
-  a41: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890847/20260508_183700_result.jpg",
-  a42: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890847/20260508_183510_result.jpg",
-  a43: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890846/20260508_183403_result.jpg",
-  a44: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890846/20260508_183349_result.jpg",
-  a45: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890845/20260508_181108_result.jpg",
-  a46: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890845/20260508_180746_result.jpg",
-  a47: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890844/20260508_180735_result.jpg",
-  a48: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890843/20260508_180648_result.jpg",
-  a49: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890843/20260508_180511_result.jpg",
-  a50: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890842/20260508_180418_result.jpg",
-  a51: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890842/20260508_180400_result.jpg",
-  a52: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890841/20260508_180349_result.jpg",
-  a53: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890840/20260508_180347_result.jpg",
-  a54: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890840/20260508_180258_result.jpg",
-  a55: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890840/20260508_180254_result.jpg",
-  a56: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890839/20260508_180237_result.jpg",
-  a57: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890838/20260508_180203_result.jpg",
-  a58: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890838/20260508_180150_result.jpg",
-  a59: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890837/20260508_175940_result.jpg",
-  a60: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890836/20260508_175847_result.jpg",
-  a61: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890836/20260508_175755_result.jpg",
-  a62: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890835/20260508_175258_result.jpg",
-  a63: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890834/20260508_174920_result.jpg",
-  a64: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890833/20260508_174836_result.jpg",
-  a65: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890832/20260508_174825_result.jpg",
-  a66: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890832/20260508_174805_result.jpg",
-  a67: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890831/20260508_174733_result.jpg",
-  a68: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890831/20260508_174712_result.jpg",
-  a69: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890829/20260508_174625_result.jpg",
-  a70: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890829/20260508_174616_result.jpg",
-  a71: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890828/20260508_174537_result.jpg",
-  a72: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890828/20260508_174304_result.jpg",
-  a73: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890827/20260508_173601_result.jpg",
-  a74: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890826/20260508_173519_result.jpg",
-  a75: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890826/20260508_173458_result.jpg",
-  a76: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890825/20260508_173320_result.jpg",
-  a77: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890825/20260508_173224_result.jpg",
-  a78: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890824/20260508_173210_result.jpg",
-  a79: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890823/20260508_173140_result.jpg",
-  a80: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890823/20260508_151601_result.jpg",
-  a81: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890822/20260508_173133_result.jpg",
-  a82: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890822/20260508_173056_result.jpg",
-  a83: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890821/20260508_173039_result.jpg",
-  a84: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890820/20260508_173035_result.jpg",
-  a85: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890818/20260508_154955_result.jpg",
-  a86: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890817/20260508_154722_result.jpg",
-  a87: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890815/20260508_154711_result.jpg",
-  a88: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890814/20260508_151555_result.jpg",
-  a89: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890813/20260508_154653_result.jpg",
-  a90: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890812/20260508_154428_result.jpg",
-  a91: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890810/20260508_154426_result.jpg",
-  a92: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890809/20260508_154121_result.jpg",
-  a93: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890809/20260508_151516_result.jpg",
-  a94: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890808/20260508_153934_result.jpg",
-  a95: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890807/20260508_153812_result.jpg",
-  a96: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890806/20260508_153812_0__result.jpg",
-  a97: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890805/20260508_151259_result.jpg",
-  a98: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890805/20260508_153616_result.jpg",
-  a99: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890804/20260508_151429_result.jpg",
-  a100: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890803/20260508_153552_result.jpg",
-  a101: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890800/20260508_151920_result.jpg",
-  a102: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890787/20260508_151253_result.jpg",
-  a103: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890785/20260508_151249_result.jpg",
-  a104: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890783/20260508_151126_result.jpg",
-  a105: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890782/20260508_151059_result.jpg",
-  a106: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890779/20260508_151057_result.jpg",
-  a107: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890777/20260508_151047_result.jpg",
-  a108: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890776/20260508_150958_result.jpg",
-  a109: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890775/20260508_150956_result.jpg",
-  a110: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890774/20260508_150910_result.jpg",
-  a111: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890773/20260508_150908_result.jpg",
-  a112: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890772/20260508_150446_result.jpg",
-  a113: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890771/20260508_150348_result.jpg",
-  a114: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890770/20260508_150230_result.jpg",
-  a115: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890769/20260508_150228_result.jpg",
-  a116: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890768/20260508_150224_result.jpg",
-  a117: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890767/20260508_150042_result.jpg",
-  a118: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890766/20260508_150023_result.jpg",
-  a119: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890764/20260508_145944_result.jpg",
-  a120: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890763/20260508_145618_result.jpg",
-  a121: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890763/20260508_145819_result.jpg",
-  a122: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890761/20260508_145818_result.jpg",
-  a123: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890760/20260508_145718_result.jpg",
-  a124: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890759/20260508_145709_result.jpg",
-  a125: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890757/20260508_145538_result.jpg",
-  a126: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890756/20260508_145524_result.jpg",
-  a127: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890755/20260508_145450_result.jpg",
-  a128: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890754/20260508_143107_result.jpg",
-  a129: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890753/20260508_142248_result.jpg",
-  a130: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890753/20260508_140820_result.jpg",
-  a131: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890752/20260508_142246_result.jpg",
-  a132: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890751/20260508_141954_result.jpg",
-  a133: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890751/20260508_141446_result.jpg",
-  a134: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890749/20260508_140832_result.jpg",
-  a135: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890748/20260508_140515_result.jpg",
-  a136: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890747/20260508_140502_result.jpg",
-  a137: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890746/20260508_140314_result.jpg",
-  a138: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890745/20260508_140312_result.jpg",
-  a139: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890743/20260508_135835_result.jpg",
-  a140: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890743/20260506_142945_result.jpg",
-  a141: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890742/20260508_140250_result.jpg",
-  a142: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890742/20260508_140025_result.jpg",
-  a143: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890741/20260508_140010_result.jpg",
-  a144: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890738/20260508_135615_result.jpg",
-  a145: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890737/20260508_135538_result.jpg",
-  a146: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890737/20260506_143010_result.jpg",
-  a147: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890737/20260506_165241_result.jpg",
-  a148: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890736/20260322_121335_result.jpg",
-  a149: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890734/20260322_105600_result.jpg",
-  a150: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890734/20260322_105520_result.jpg",
-  a151: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890734/20260331_123559_result.jpg",
-  a152: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890731/20260215_214048_result.jpg",
-  a153: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890731/20260205_202036_result.jpg",
-  a154: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890730/20260321_163027_result.jpg",
-  a155: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890730/20260215_213835_result.jpg",
-  a156: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890729/20260215_213445_result.jpg",
-  a157: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890728/20260203_172645_result.jpg",
-  a158: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890728/20260208_202807_result.jpg",
-  a159: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890727/20260203_172453_result.jpg",
-  a160: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890726/20260203_170711_result.jpg",
-  a161: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890726/20260203_171112_result.jpg",
-  a162: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890726/20260203_172034_result.jpg",
-  a163: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890726/20260203_172255_result.jpg",
-  a164: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890726/20260203_170542_result.jpg",
-  a165: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890726/20260203_172218_result.jpg",
+    const imageUrls = {
+      a1: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890982/1778439008730_result.jpg",
+      a2: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890981/1778438730829_result.jpg",
+      a3: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890981/20260508_222152_result.jpg",
+      a4: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890980/20260508_222140_result.jpg",
+      a5: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890979/20260508_222101_result.jpg",
+      a6: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890978/20260508_220915_result.jpg",
+      a7: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890978/20260508_222040_result.jpg",
+      a8: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890977/20260508_220638_result.jpg",
+      a9: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890976/20260508_220635_result.jpg",
+      a10: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890975/20260508_220542_result.jpg",
+      a11: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890883/20260508_220533_result.jpg",
+      a12: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890869/20260508_220518_result.jpg",
+      a13: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890867/20260508_220505_result.jpg",
+      a14: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890867/20260508_220447_result.jpg",
+      a15: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890866/20260508_220434_result.jpg",
+      a16: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890865/20260508_220432_result.jpg",
+      a17: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890864/20260508_220406_result.jpg",
+      a18: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890863/20260508_220404_result.jpg",
+      a19: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890862/20260508_220358_result.jpg",
+      a20: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890861/20260508_220340_result.jpg",
+      a21: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890861/20260508_220331_result.jpg",
+      a22: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890860/20260508_220017_result.jpg",
+      a23: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890859/20260508_212139_result.jpg",
+      a24: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890858/20260508_212119_result.jpg",
+      a25: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890857/20260508_212048_result.jpg",
+      a26: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890856/20260508_203355_result.jpg",
+      a27: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890855/20260508_203158_result.jpg",
+      a28: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890855/20260508_191026_result.jpg",
+      a29: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890853/20260508_190847_result.jpg",
+      a30: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890853/20260508_185856_result.jpg",
+      a31: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890852/20260508_185848_result.jpg",
+      a32: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890851/20260508_185737_result.jpg",
+      a33: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890851/20260508_185619_result.jpg",
+      a34: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890851/20260508_184350_result.jpg",
+      a35: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890850/20260508_184342_result.jpg",
+      a36: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890850/20260508_183957_result.jpg",
+      a37: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890849/20260508_183938_result.jpg",
+      a38: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890849/20260508_183928_result.jpg",
+      a39: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890848/20260508_183756_result.jpg",
+      a40: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890848/20260508_183735_result.jpg",
+      a41: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890847/20260508_183700_result.jpg",
+      a42: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890847/20260508_183510_result.jpg",
+      a43: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890846/20260508_183403_result.jpg",
+      a44: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890846/20260508_183349_result.jpg",
+      a45: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890845/20260508_181108_result.jpg",
+      a46: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890845/20260508_180746_result.jpg",
+      a47: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890844/20260508_180735_result.jpg",
+      a48: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890843/20260508_180648_result.jpg",
+      a49: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890843/20260508_180511_result.jpg",
+      a50: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890842/20260508_180418_result.jpg",
+      a51: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890842/20260508_180400_result.jpg",
+      a52: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890841/20260508_180349_result.jpg",
+      a53: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890840/20260508_180347_result.jpg",
+      a54: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890840/20260508_180258_result.jpg",
+      a55: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890840/20260508_180254_result.jpg",
+      a56: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890839/20260508_180237_result.jpg",
+      a57: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890838/20260508_180203_result.jpg",
+      a58: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890838/20260508_180150_result.jpg",
+      a59: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890837/20260508_175940_result.jpg",
+      a60: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890836/20260508_175847_result.jpg",
+      a61: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890836/20260508_175755_result.jpg",
+      a62: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890835/20260508_175258_result.jpg",
+      a63: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890834/20260508_174920_result.jpg",
+      a64: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890833/20260508_174836_result.jpg",
+      a65: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890832/20260508_174825_result.jpg",
+      a66: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890832/20260508_174805_result.jpg",
+      a67: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890831/20260508_174733_result.jpg",
+      a68: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890831/20260508_174712_result.jpg",
+      a69: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890829/20260508_174625_result.jpg",
+      a70: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890829/20260508_174616_result.jpg",
+      a71: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890828/20260508_174537_result.jpg",
+      a72: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890828/20260508_174304_result.jpg",
+      a73: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890827/20260508_173601_result.jpg",
+      a74: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890826/20260508_173519_result.jpg",
+      a75: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890826/20260508_173458_result.jpg",
+      a76: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890825/20260508_173320_result.jpg",
+      a77: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890825/20260508_173224_result.jpg",
+      a78: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890824/20260508_173210_result.jpg",
+      a79: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890823/20260508_173140_result.jpg",
+      a80: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890823/20260508_151601_result.jpg",
+      a81: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890822/20260508_173133_result.jpg",
+      a82: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890822/20260508_173056_result.jpg",
+      a83: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890821/20260508_173039_result.jpg",
+      a84: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890820/20260508_173035_result.jpg",
+      a85: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890818/20260508_154955_result.jpg",
+      a86: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890817/20260508_154722_result.jpg",
+      a87: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890815/20260508_154711_result.jpg",
+      a88: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890814/20260508_151555_result.jpg",
+      a89: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890813/20260508_154653_result.jpg",
+      a90: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890812/20260508_154428_result.jpg",
+      a91: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890810/20260508_154426_result.jpg",
+      a92: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890809/20260508_154121_result.jpg",
+      a93: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890809/20260508_151516_result.jpg",
+      a94: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890808/20260508_153934_result.jpg",
+      a95: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890807/20260508_153812_result.jpg",
+      a96: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890806/20260508_153812_0__result.jpg",
+      a97: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890805/20260508_151259_result.jpg",
+      a98: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890805/20260508_153616_result.jpg",
+      a99: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890804/20260508_151429_result.jpg",
+      a100: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890803/20260508_153552_result.jpg",
+      a101: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890800/20260508_151920_result.jpg",
+      a102: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890787/20260508_151253_result.jpg",
+      a103: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890785/20260508_151249_result.jpg",
+      a104: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890783/20260508_151126_result.jpg",
+      a105: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890782/20260508_151059_result.jpg",
+      a106: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890779/20260508_151057_result.jpg",
+      a107: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890777/20260508_151047_result.jpg",
+      a108: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890776/20260508_150958_result.jpg",
+      a109: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890775/20260508_150956_result.jpg",
+      a110: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890774/20260508_150910_result.jpg",
+      a111: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890773/20260508_150908_result.jpg",
+      a112: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890772/20260508_150446_result.jpg",
+      a113: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890771/20260508_150348_result.jpg",
+      a114: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890770/20260508_150230_result.jpg",
+      a115: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890769/20260508_150228_result.jpg",
+      a116: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890768/20260508_150224_result.jpg",
+      a117: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890767/20260508_150042_result.jpg",
+      a118: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890766/20260508_150023_result.jpg",
+      a119: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890764/20260508_145944_result.jpg",
+      a120: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890763/20260508_145618_result.jpg",
+      a121: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890763/20260508_145819_result.jpg",
+      a122: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890761/20260508_145818_result.jpg",
+      a123: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890760/20260508_145718_result.jpg",
+      a124: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890759/20260508_145709_result.jpg",
+      a125: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890757/20260508_145538_result.jpg",
+      a126: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890756/20260508_145524_result.jpg",
+      a127: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890755/20260508_145450_result.jpg",
+      a128: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890754/20260508_143107_result.jpg",
+      a129: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890753/20260508_142248_result.jpg",
+      a130: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890753/20260508_140820_result.jpg",
+      a131: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890752/20260508_142246_result.jpg",
+      a132: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890751/20260508_141954_result.jpg",
+      a133: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890751/20260508_141446_result.jpg",
+      a134: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890749/20260508_140832_result.jpg",
+      a135: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890748/20260508_140515_result.jpg",
+      a136: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890747/20260508_140502_result.jpg",
+      a137: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890746/20260508_140314_result.jpg",
+      a138: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890745/20260508_140312_result.jpg",
+      a139: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890743/20260508_135835_result.jpg",
+      a140: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890743/20260506_142945_result.jpg",
+      a141: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890742/20260508_140250_result.jpg",
+      a142: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890742/20260508_140025_result.jpg",
+      a143: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890741/20260508_140010_result.jpg",
+      a144: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890738/20260508_135615_result.jpg",
+      a145: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890737/20260508_135538_result.jpg",
+      a146: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890737/20260506_143010_result.jpg",
+      a147: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890737/20260506_165241_result.jpg",
+      a148: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890736/20260322_121335_result.jpg",
+      a149: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890734/20260322_105600_result.jpg",
+      a150: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890734/20260322_105520_result.jpg",
+      a151: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890734/20260331_123559_result.jpg",
+      a152: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890731/20260215_214048_result.jpg",
+      a153: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890731/20260205_202036_result.jpg",
+      a154: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890730/20260321_163027_result.jpg",
+      a155: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890730/20260215_213835_result.jpg",
+      a156: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890729/20260215_213445_result.jpg",
+      a157: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890728/20260203_172645_result.jpg",
+      a158: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890728/20260208_202807_result.jpg",
+      a159: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890727/20260203_172453_result.jpg",
+      a160: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890726/20260203_170711_result.jpg",
+      a161: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890726/20260203_171112_result.jpg",
+      a162: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890726/20260203_172034_result.jpg",
+      a163: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890726/20260203_172255_result.jpg",
+      a164: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890726/20260203_170542_result.jpg",
+      a165: "https://res.cloudinary.com/v4qwfqix/image/upload/v1793890726/20260203_172218_result.jpg",
 
       // Add more URLs using commas
     }
 
-   const processedImages = Object.values(imageUrls)
-  .filter(url => typeof url === "string" && url.startsWith("https://"))
-  ;
+    const processedImages = Object.values(imageUrls)
+      .filter(url => typeof url === "string" && url.startsWith("https://"))
+      ;
 
-console.log("Total Images:", processedImages.length);
-console.log("First Image:", processedImages[0]);
+    console.log("Total Images:", processedImages.length);
+    console.log("First Image:", processedImages[0]);
 
     // =====================================
     // SETTINGS
     // =====================================
 
     const settings = {
-      radius: 1.8,
+      radius: 1.85,
       verticalGap: 0.9,
       angleGap: 0.85,
       cardWidth: 1.35,
       cardHeight: 1.8,
-      idleSpin: 0.005,
+      cardRadius: 0.08, // Rounded corners radius
+      idleSpin: 0.004,
       scrollSensitivity: 0.004,
-      smoothing: 0.1,
-      wobbleStrength: 0.3,
+      smoothing: 0.09,
+      wobbleStrength: 0.28,
+      brightness: 1.18, // Brightness boost for dark luxury mode
+      contrast: 1.08,   // Punchy contrast
     };
 
     const vertexShader = `
       uniform float uWobble;
       varying vec2 vUv;
+      varying float vDepth;
 
       void main() {
         vUv = uv;
@@ -244,22 +441,61 @@ console.log("First Image:", processedImages[0]);
 
         viewPosition.x += sin(uv.y * 3.14159) * uWobble;
 
+        vDepth = -viewPosition.z;
+
         gl_Position = projectionMatrix * viewPosition;
       }
     `;
 
     const fragmentShader = `
       uniform sampler2D uTexture;
+      uniform float uBrightness;
+      uniform float uContrast;
+      uniform vec2 uCardSize;
+      uniform float uRadius;
       varying vec2 vUv;
+      varying float vDepth;
+
+      // Signed distance function for rounded rectangle
+      float roundedBoxSDF(vec2 p, vec2 b, float r) {
+        vec2 q = abs(p) - b + r;
+        return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r;
+      }
 
       void main() {
+        // Calculate rounded corner distance
+        vec2 p = (vUv - 0.5) * uCardSize;
+        vec2 halfSize = uCardSize * 0.5;
+        float dist = roundedBoxSDF(p, halfSize, uRadius);
+
+        // Discard pixels outside rounded boundary
+        if (dist > 0.0) discard;
+
         vec4 color = texture2D(uTexture, vUv);
 
+        // 1. Gamma Correction (Fixes the dark/blackish color crush)
+        color.rgb = pow(color.rgb, vec3(1.0 / 2.2));
+
+        // 2. Contrast & Clarity enhancement
+        color.rgb = (color.rgb - 0.5) * uContrast + 0.5;
+
+        // 3. Brightness boost
+        color.rgb *= uBrightness;
+
+        // 4. Subtle Luxury Border Rim Light
+        float rim = smoothstep(0.0, -0.012, dist) - smoothstep(-0.012, -0.024, dist);
+        color.rgb += vec3(rim * 0.32);
+
+        // 5. Backface Styling (Matte Charcoal luxury look)
         if (!gl_FrontFacing) {
-          color.rgb = mix(color.rgb, vec3(1.0), 0.75);
+          color.rgb = mix(color.rgb * 0.25, vec3(0.05, 0.06, 0.08), 0.88);
         }
 
-        gl_FragColor = color;
+        // 6. Atmospheric Depth Fog (fades distant back cards smoothly into darkness)
+        float fog = smoothstep(4.5, 13.5, vDepth);
+        color.rgb = mix(color.rgb, vec3(0.031, 0.031, 0.039), fog * 0.82);
+
+        gl_FragColor = vec4(clamp(color.rgb, 0.0, 1.0), 1.0);
       }
     `;
 
@@ -324,29 +560,65 @@ console.log("First Image:", processedImages[0]);
       return texture;
     });
 
-    // Duplicate textures for spiral arrangement
+    // =====================================
+    // FLOATING 3D PARTICLES (DUST & GLOW)
+    // =====================================
 
+    const particleCount = 280;
+    const particleGeometry = new THREE.BufferGeometry();
+    const particlePositions = new Float32Array(particleCount * 3);
+
+    for (let i = 0; i < particleCount * 3; i += 3) {
+      particlePositions[i] = (Math.random() - 0.5) * 18;
+      particlePositions[i + 1] = (Math.random() - 0.5) * 24;
+      particlePositions[i + 2] = (Math.random() - 0.5) * 14;
+    }
+
+    particleGeometry.setAttribute(
+      'position',
+      new THREE.BufferAttribute(particlePositions, 3)
+    );
+
+    const particleMaterial = new THREE.PointsMaterial({
+      size: 0.04,
+      color: 0x93a5ff,
+      transparent: true,
+      opacity: 0.45,
+      blending: THREE.AdditiveBlending,
+    });
+
+    const particles = new THREE.Points(particleGeometry, particleMaterial);
+    scene.add(particles);
+
+    // =====================================
+    // BUILD SPIRAL CARDS
+    // =====================================
+
+    const uCardSize = new THREE.Vector2(settings.cardWidth, settings.cardHeight);
+
+    // Duplicate textures for continuous spiral loop
     const allTextures = textures.concat(textures);
 
     const cards = allTextures.map((texture) => {
-
       const card = new THREE.Mesh(
         geometry,
-
         new THREE.ShaderMaterial({
           vertexShader,
           fragmentShader,
           side: THREE.DoubleSide,
-
+          transparent: true,
           uniforms: {
             uTexture: { value: texture },
             uWobble: wobble,
+            uBrightness: { value: settings.brightness },
+            uContrast: { value: settings.contrast },
+            uCardSize: { value: uCardSize },
+            uRadius: { value: settings.cardRadius },
           },
         })
       );
 
       scene.add(card);
-
       return card;
     });
 
@@ -354,7 +626,22 @@ console.log("First Image:", processedImages[0]);
     console.log("Total Spiral Cards:", cards.length);
 
     // =====================================
-    // SCROLL & ANIMATION
+    // MOUSE PARALLAX & AMBIENT GLOW
+    // =====================================
+
+    const mouse = { x: 0, y: 0, targetX: 0, targetY: 0 };
+    const counterEl = document.getElementById('photoCounter');
+
+    window.addEventListener('pointermove', (e) => {
+      mouse.targetX = (e.clientX / window.innerWidth - 0.5) * 2;
+      mouse.targetY = (e.clientY / window.innerHeight - 0.5) * 2;
+
+      document.documentElement.style.setProperty('--mouse-x', `${e.clientX}px`);
+      document.documentElement.style.setProperty('--mouse-y', `${e.clientY}px`);
+    });
+
+    // =====================================
+    // SCROLL & ANIMATION LOOP
     // =====================================
 
     const state = {
@@ -366,31 +653,31 @@ console.log("First Image:", processedImages[0]);
       target: window,
       type: 'wheel,touch',
       preventDefault: true,
-
       onChange: (self) => {
         state.rotationTarget += self.deltaY * settings.scrollSensitivity;
       },
     });
 
     gsap.ticker.add(() => {
-
       state.rotationTarget += settings.idleSpin;
+      state.rotation += (state.rotationTarget - state.rotation) * settings.smoothing;
 
-      state.rotation +=
-        (state.rotationTarget - state.rotation) * settings.smoothing;
+      const wobbleLag = gsap.utils.clamp(-1, 1, state.rotationTarget - state.rotation);
+      wobble.value += (wobbleLag * settings.wobbleStrength - wobble.value) * settings.smoothing;
 
-      const lag = gsap.utils.clamp(
-        -1,
-        1,
-        state.rotationTarget - state.rotation
-      );
+      // Smooth Mouse Parallax
+      mouse.x += (mouse.targetX - mouse.x) * 0.05;
+      mouse.y += (mouse.targetY - mouse.y) * 0.05;
 
-      wobble.value +=
-        (lag * settings.wobbleStrength - wobble.value) *
-        settings.smoothing;
+      camera.position.x = mouse.x * 0.65;
+      camera.position.y = -mouse.y * 0.42;
+      camera.lookAt(0, 0, 0);
+
+      // Subtle particle rotation
+      particles.rotation.y += 0.0006;
+      particles.rotation.x += 0.0002;
 
       cards.forEach((card, index) => {
-
         const slot =
           gsap.utils.wrap(0, cardCount, index - state.rotation) -
           cardCount / 2;
@@ -405,6 +692,12 @@ console.log("First Image:", processedImages[0]);
 
         card.rotation.y = Math.PI / 2 - angle;
       });
+
+      // Update active photo counter in UI
+      if (counterEl && processedImages.length > 0) {
+        const currentActive = (Math.round(gsap.utils.wrap(0, cardCount, state.rotation)) % processedImages.length) + 1;
+        counterEl.textContent = `${String(currentActive).padStart(3, '0')} / ${String(processedImages.length).padStart(3, '0')}`;
+      }
 
       renderer.render(scene, camera);
     });
@@ -429,4 +722,5 @@ console.log("First Image:", processedImages[0]);
   </script>
 
 </body>
+
 </html>
