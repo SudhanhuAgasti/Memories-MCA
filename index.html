@@ -28,14 +28,89 @@
       --mouse-y: 50vh;
     }
 
-    /* Ambient Interactive Radial Glow */
-    .ambient-glow {
+    /* Dynamic Multi-Theme Background */
+    .bg-canvas-wrap {
       position: fixed;
       inset: 0;
+      overflow: hidden;
       pointer-events: none;
-      background: radial-gradient(circle 750px at var(--mouse-x) var(--mouse-y), rgba(88, 101, 242, 0.18), rgba(168, 85, 247, 0.09), transparent 70%);
       z-index: 0;
-      transition: background 0.15s ease-out;
+      background: #060608;
+    }
+
+    .theme-layer {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* 1. Apple Studio Pedestal Theme */
+    body.theme-studio .layer-studio { opacity: 1; }
+    .studio-pedestal {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 950px 380px at 50% 68%, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 45%, transparent 70%);
+    }
+    .studio-glow {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle 850px at 50% 40%, rgba(55, 60, 85, 0.18) 0%, transparent 65%);
+    }
+
+    /* 2. Living Aurora Nebula Theme */
+    body.theme-aurora .layer-aurora { opacity: 1; }
+    @keyframes auroraDrift {
+      0%, 100% { transform: scale(1) translate(0, 0); }
+      50% { transform: scale(1.16) translate(-5%, 4%); }
+    }
+    .aurora-blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      animation: auroraDrift 14s infinite ease-in-out;
+    }
+    .blob-1 {
+      top: -10%; left: 8%; width: 55vw; height: 55vw;
+      background: rgba(99, 102, 241, 0.16);
+    }
+    .blob-2 {
+      bottom: -15%; right: 5%; width: 50vw; height: 50vw;
+      background: rgba(168, 85, 247, 0.14);
+      animation-delay: -5s;
+    }
+    .blob-3 {
+      top: 35%; right: 20%; width: 42vw; height: 42vw;
+      background: rgba(20, 184, 166, 0.10);
+      animation-delay: -9s;
+    }
+
+    /* 3. Deep Space Theme */
+    body.theme-space .layer-space { opacity: 1; }
+    .space-nebula {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle 1000px at 50% 50%, rgba(30, 40, 70, 0.12) 0%, transparent 75%);
+    }
+
+    /* 4. Dynamic Ambilight Theme */
+    body.theme-ambilight .layer-ambilight { opacity: 1; }
+    @keyframes ambilightCycle {
+      0% { filter: hue-rotate(0deg); }
+      100% { filter: hue-rotate(360deg); }
+    }
+    .ambilight-aura {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle 850px at 50% 50%, rgba(236, 72, 153, 0.16) 0%, rgba(99, 102, 241, 0.12) 45%, transparent 75%);
+      animation: ambilightCycle 18s infinite linear;
+    }
+
+    /* Vignette Overlay for all */
+    .bg-vignette {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 50%, transparent 45%, rgba(6, 6, 8, 0.75) 100%);
     }
 
     /* Subtle Cinematic Film Grain */
@@ -134,6 +209,13 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+
+    body.is-zoomed .ui-footer {
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(12px);
     }
 
     .nav-hint {
@@ -169,22 +251,140 @@
       border: 1px solid rgba(255, 255, 255, 0.08);
     }
 
-    @media (max-width: 640px) {
-      .ui-container {
-        padding: 18px 20px;
-      }
+    /* Click-to-Zoom Focus Modal Controls */
+    .zoom-overlay {
+      position: fixed;
+      bottom: 60px;
+      left: 50%;
+      transform: translateX(-50%) translateY(16px);
+      pointer-events: none;
+      z-index: 25;
+      opacity: 0;
+      transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
 
-      .brand-title {
-        font-size: 11px;
+    .zoom-overlay.active {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+      pointer-events: auto;
+    }
+
+    .close-zoom-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 26px;
+      border-radius: 999px;
+      background: rgba(18, 18, 24, 0.82);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      cursor: pointer;
+      box-shadow: 0 10px 36px rgba(0, 0, 0, 0.7), 0 0 24px rgba(99, 102, 241, 0.35);
+      transition: all 0.25s ease;
+      touch-action: manipulation;
+    }
+
+    .close-zoom-btn:hover {
+      background: rgba(30, 30, 42, 0.95);
+      transform: scale(1.05);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.8), 0 0 34px rgba(99, 102, 241, 0.55);
+    }
+
+    /* Live Background Switcher Controls */
+    .theme-switcher {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 4px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      pointer-events: auto;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    }
+
+    .theme-btn {
+      padding: 5px 12px;
+      border-radius: 999px;
+      background: transparent;
+      border: none;
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      touch-action: manipulation;
+    }
+
+    .theme-btn:hover {
+      color: #ffffff;
+    }
+
+    .theme-btn.active {
+      background: rgba(255, 255, 255, 0.18);
+      color: #ffffff;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5), 0 0 14px rgba(255, 255, 255, 0.2);
+    }
+
+    @media (max-width: 768px) {
+      .ui-container {
+        padding: clamp(14px, 3.5vw, 20px) clamp(14px, 4vw, 24px);
       }
 
       .status-badge {
         display: none;
       }
+    }
+
+    @media (max-width: 520px) {
+      .brand-title {
+        font-size: 10px;
+        letter-spacing: 0.16em;
+      }
+
+      .tag-badge {
+        display: none;
+      }
+
+      .theme-switcher {
+        gap: 1px;
+        padding: 2px 3px;
+      }
+
+      .theme-btn {
+        padding: 4px 7px;
+        font-size: 8.5px;
+        letter-spacing: 0.08em;
+      }
 
       .nav-hint {
-        font-size: 10px;
+        font-size: 8.5px;
+        letter-spacing: 0.12em;
         padding: 6px 12px;
+      }
+
+      .counter-display {
+        font-size: 11px;
+        padding: 5px 10px;
+      }
+
+      .zoom-overlay {
+        bottom: 30px;
+      }
+
+      .close-zoom-btn {
+        padding: 13px 26px;
+        font-size: 10.5px;
+        letter-spacing: 0.14em;
       }
     }
   </style>
@@ -194,9 +394,33 @@
   <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
 </head>
 
-<body>
+<body class="theme-studio">
 
-  <div class="ambient-glow" id="ambientGlow"></div>
+  <!-- Dynamic Multi-Theme Background Layers -->
+  <div class="bg-canvas-wrap">
+    <!-- 1. Apple Studio Pedestal -->
+    <div class="theme-layer layer-studio">
+      <div class="studio-pedestal"></div>
+      <div class="studio-glow"></div>
+    </div>
+    <!-- 2. Living Aurora Nebula -->
+    <div class="theme-layer layer-aurora">
+      <div class="aurora-blob blob-1"></div>
+      <div class="aurora-blob blob-2"></div>
+      <div class="aurora-blob blob-3"></div>
+    </div>
+    <!-- 3. Deep Space Nebula -->
+    <div class="theme-layer layer-space">
+      <div class="space-nebula"></div>
+    </div>
+    <!-- 4. Dynamic Ambilight -->
+    <div class="theme-layer layer-ambilight">
+      <div class="ambilight-aura"></div>
+    </div>
+    <!-- Vignette overlay for depth -->
+    <div class="bg-vignette"></div>
+  </div>
+
   <div class="grain-overlay"></div>
 
   <div class="ui-container">
@@ -205,6 +429,15 @@
         <span>BEYOND CLASSROOM</span>
         <span class="tag-badge">ARCHIVE</span>
       </div>
+
+      <!-- Live Theme Switcher Pills -->
+      <div class="theme-switcher">
+        <button class="theme-btn active" data-theme="studio">Studio</button>
+        <button class="theme-btn" data-theme="aurora">Aurora</button>
+        <button class="theme-btn" data-theme="space">Space</button>
+        <button class="theme-btn" data-theme="ambilight">Ambilight</button>
+      </div>
+
       <div class="status-badge">
         <span class="pulse-dot"></span>
         <span>INTERACTIVE 3D SPIRAL</span>
@@ -222,6 +455,16 @@
       </div>
       <div class="counter-display" id="photoCounter">001 / 165</div>
     </footer>
+
+    <div class="zoom-overlay" id="zoomOverlay">
+      <button class="close-zoom-btn" id="closeZoomBtn">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+        <span>CLOSE PREVIEW [ESC]</span>
+      </button>
+    </div>
   </div>
 
   <canvas id="spiral"></canvas>
@@ -453,6 +696,7 @@
       uniform float uContrast;
       uniform vec2 uCardSize;
       uniform float uRadius;
+      uniform float uHover;
       varying vec2 vUv;
       varying float vDepth;
 
@@ -482,9 +726,10 @@
         // 3. Brightness boost
         color.rgb *= uBrightness;
 
-        // 4. Subtle Luxury Border Rim Light
+        // 4. Subtle Luxury Border Rim Light + Dynamic Hover Glow
         float rim = smoothstep(0.0, -0.012, dist) - smoothstep(-0.012, -0.024, dist);
-        color.rgb += vec3(rim * 0.32);
+        color.rgb += vec3(rim * (0.32 + uHover * 0.85));
+        color.rgb += vec3(uHover * 0.07);
 
         // 5. Backface Styling (Matte Charcoal luxury look)
         if (!gl_FrontFacing) {
@@ -614,9 +859,12 @@
             uContrast: { value: settings.contrast },
             uCardSize: { value: uCardSize },
             uRadius: { value: settings.cardRadius },
+            uHover: { value: 0.0 },
           },
         })
       );
+
+      card.userData.hoverScale = { value: 1.0 };
 
       scene.add(card);
       return card;
@@ -626,56 +874,288 @@
     console.log("Total Spiral Cards:", cards.length);
 
     // =====================================
-    // MOUSE PARALLAX & AMBIENT GLOW
+    // ANIMATION 1: CLICK-TO-ZOOM / FOCUS MODE
+    // =====================================
+
+    let isZoomed = false;
+    let focusedCard = null;
+    const focusWeight = { value: 0 };
+    const zoomOverlay = document.getElementById('zoomOverlay');
+    const closeZoomBtn = document.getElementById('closeZoomBtn');
+
+    let cameraBaseZ = 8.0;
+
+    function getResponsiveMetrics() {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      const aspect = width / height;
+
+      // Screen categories
+      const isMobile = width < 768 || aspect < 0.65;
+      const isSmallMobile = width < 420 || aspect < 0.52;
+
+      // Camera FOV & Distance:
+      // Keep natural perspective while ensuring the spiral and cards fit comfortably on narrow phone screens
+      let cameraFov = 35;
+      let cameraBaseZ = 8.0;
+
+      if (aspect < 0.52) {
+        // Tall skinny phones (iPhone portrait, Galaxy)
+        cameraFov = 38;
+        cameraBaseZ = 12.2;
+      } else if (aspect < 0.75) {
+        // Standard phone portrait & mini tablets
+        cameraFov = 36;
+        cameraBaseZ = 11.0;
+      } else if (aspect < 1.1) {
+        // Square-ish tablets / iPad portrait
+        cameraFov = 35;
+        cameraBaseZ = 9.2;
+      } else {
+        // Desktop / Laptop landscape
+        cameraFov = 35;
+        cameraBaseZ = 8.0;
+      }
+
+      // Restore original generous gaps and spacing (no overlapping / sticking together)
+      const spiralRadius = settings.radius;
+      const spiralVGap = settings.verticalGap;
+
+      // Inspection Zoom Parameters:
+      const targetFocusZ = isMobile ? (cameraBaseZ - 6.2) : (cameraBaseZ - 4.2);
+      const focusDist = cameraBaseZ - targetFocusZ;
+
+      // Exact mathematical frustum at focus plane
+      const vFovRad = (cameraFov * Math.PI) / 180;
+      const visibleHeight = 2 * focusDist * Math.tan(vFovRad / 2);
+      const visibleWidth = visibleHeight * aspect;
+
+      // Auto-fit photo inside mobile/desktop screen with perfect margins
+      const maxScaleW = (visibleWidth * (isMobile ? (isSmallMobile ? 0.84 : 0.80) : 0.74)) / settings.cardWidth;
+      const maxScaleH = (visibleHeight * (isMobile ? 0.58 : 0.76)) / settings.cardHeight;
+      const focusScale = Math.min(maxScaleW, maxScaleH);
+
+      // On mobile, position photo slightly higher so it never covers the Close button
+      const focusTargetY = isMobile ? (isSmallMobile ? 0.44 : 0.34) : 0.0;
+
+      return {
+        aspect,
+        isMobile,
+        isSmallMobile,
+        cameraFov,
+        cameraBaseZ,
+        spiralRadius,
+        spiralVGap,
+        targetFocusZ,
+        focusScale,
+        focusTargetY
+      };
+    }
+
+    function openZoom(card) {
+      if (isZoomed) return;
+      isZoomed = true;
+      focusedCard = card;
+      document.body.classList.add('is-zoomed');
+      if (zoomOverlay) zoomOverlay.classList.add('active');
+
+      gsap.to(focusWeight, {
+        value: 1,
+        duration: 0.85,
+        ease: 'power3.out',
+      });
+    }
+
+    function closeZoom() {
+      if (!isZoomed) return;
+      document.body.classList.remove('is-zoomed');
+      if (zoomOverlay) zoomOverlay.classList.remove('active');
+
+      gsap.to(focusWeight, {
+        value: 0,
+        duration: 0.7,
+        ease: 'power3.inOut',
+        onComplete: () => {
+          focusedCard = null;
+          isZoomed = false;
+        }
+      });
+    }
+
+    if (closeZoomBtn) {
+      closeZoomBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        closeZoom();
+      });
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && isZoomed) closeZoom();
+    });
+
+    // =====================================
+    // LIVE THEME SWITCHER LOGIC
+    // =====================================
+
+    document.querySelectorAll('.theme-btn').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        document.querySelectorAll('.theme-btn').forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        const theme = btn.dataset.theme;
+        document.body.classList.remove('theme-studio', 'theme-aurora', 'theme-space', 'theme-ambilight');
+        document.body.classList.add(`theme-${theme}`);
+      });
+    });
+
+    // =====================================
+    // ANIMATION 2: 3D RAYCASTER HOVER & MOUSE INTERACTION
     // =====================================
 
     const mouse = { x: 0, y: 0, targetX: 0, targetY: 0 };
+    const raycaster = new THREE.Raycaster();
+    const rayMouse = new THREE.Vector2(-999, -999);
+    let hoveredCard = null;
+
+    let dragDistance = 0;
+    let pointerDownPos = { x: 0, y: 0 };
     const counterEl = document.getElementById('photoCounter');
+
+    window.addEventListener('pointerdown', (e) => {
+      pointerDownPos.x = e.clientX;
+      pointerDownPos.y = e.clientY;
+      dragDistance = 0;
+    });
 
     window.addEventListener('pointermove', (e) => {
       mouse.targetX = (e.clientX / window.innerWidth - 0.5) * 2;
       mouse.targetY = (e.clientY / window.innerHeight - 0.5) * 2;
 
+      rayMouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+      rayMouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+      dragDistance += Math.hypot(e.clientX - pointerDownPos.x, e.clientY - pointerDownPos.y);
+
       document.documentElement.style.setProperty('--mouse-x', `${e.clientX}px`);
       document.documentElement.style.setProperty('--mouse-y', `${e.clientY}px`);
+    });
+
+    window.addEventListener('pointerup', (e) => {
+      // If user dragged more than 7px, treat as scroll/drag, not a click
+      if (dragDistance > 7) return;
+
+      if (isZoomed) {
+        closeZoom();
+        return;
+      }
+
+      raycaster.setFromCamera(rayMouse, camera);
+      const intersects = raycaster.intersectObjects(cards);
+      if (intersects.length > 0) {
+        openZoom(intersects[0].object);
+      }
+    });
+
+    // =====================================
+    // ANIMATION 3: CINEMATIC INTRO ENTRY
+    // =====================================
+
+    const introProgress = { value: 0 };
+
+    const state = {
+      rotation: -5.0, // Initial rotational sweep
+      rotationTarget: 0.0
+    };
+
+    gsap.to(introProgress, {
+      value: 1,
+      duration: 2.2,
+      ease: 'power3.out',
+      delay: 0.15
+    });
+
+    const initMetrics = getResponsiveMetrics();
+    camera.position.z = initMetrics.cameraBaseZ;
+
+    gsap.from(camera.position, {
+      z: initMetrics.cameraBaseZ + 6,
+      duration: 2.2,
+      ease: 'power3.out'
     });
 
     // =====================================
     // SCROLL & ANIMATION LOOP
     // =====================================
 
-    const state = {
-      rotation: 0,
-      rotationTarget: 0
-    };
-
     Observer.create({
       target: window,
       type: 'wheel,touch',
       preventDefault: true,
       onChange: (self) => {
-        state.rotationTarget += self.deltaY * settings.scrollSensitivity;
+        if (isZoomed) return; // Prevent spinning while inspecting card
+        const isTouch = self.event && self.event.type && self.event.type.startsWith('touch');
+        const sensitivity = isTouch ? 0.0034 : settings.scrollSensitivity;
+        state.rotationTarget += self.deltaY * sensitivity;
       },
     });
 
     gsap.ticker.add(() => {
-      state.rotationTarget += settings.idleSpin;
+      const metrics = getResponsiveMetrics();
+
+      // Freeze idle spin during focus zoom
+      state.rotationTarget += settings.idleSpin * (1.0 - focusWeight.value);
       state.rotation += (state.rotationTarget - state.rotation) * settings.smoothing;
 
       const wobbleLag = gsap.utils.clamp(-1, 1, state.rotationTarget - state.rotation);
       wobble.value += (wobbleLag * settings.wobbleStrength - wobble.value) * settings.smoothing;
 
-      // Smooth Mouse Parallax
+      // Smooth Mouse Parallax (softened during zoom)
       mouse.x += (mouse.targetX - mouse.x) * 0.05;
       mouse.y += (mouse.targetY - mouse.y) * 0.05;
 
-      camera.position.x = mouse.x * 0.65;
-      camera.position.y = -mouse.y * 0.42;
+      const parallaxDamp = 1.0 - focusWeight.value * 0.65;
+      camera.position.x = mouse.x * 0.65 * parallaxDamp;
+      camera.position.y = -mouse.y * 0.42 * parallaxDamp;
       camera.lookAt(0, 0, 0);
 
-      // Subtle particle rotation
+      // Subtle particle ambient rotation
       particles.rotation.y += 0.0006;
       particles.rotation.x += 0.0002;
+
+      // ANIMATION 2: Raycaster Hover Check in real time
+      if (!isZoomed && introProgress.value > 0.4) {
+        raycaster.setFromCamera(rayMouse, camera);
+        const intersects = raycaster.intersectObjects(cards);
+
+        if (intersects.length > 0) {
+          const hit = intersects[0].object;
+          if (hoveredCard !== hit) {
+            if (hoveredCard) {
+              gsap.to(hoveredCard.userData.hoverScale, { value: 1.0, duration: 0.3, ease: 'power2.out' });
+              gsap.to(hoveredCard.material.uniforms.uHover, { value: 0.0, duration: 0.3 });
+            }
+            hoveredCard = hit;
+            gsap.to(hoveredCard.userData.hoverScale, { value: 1.12, duration: 0.3, ease: 'power2.out' });
+            gsap.to(hoveredCard.material.uniforms.uHover, { value: 1.0, duration: 0.3 });
+            document.body.style.cursor = 'pointer';
+          }
+        } else if (hoveredCard) {
+          gsap.to(hoveredCard.userData.hoverScale, { value: 1.0, duration: 0.35, ease: 'power2.out' });
+          gsap.to(hoveredCard.material.uniforms.uHover, { value: 0.0, duration: 0.35 });
+          hoveredCard = null;
+          document.body.style.cursor = 'default';
+        }
+      } else if (hoveredCard) {
+        gsap.to(hoveredCard.userData.hoverScale, { value: 1.0, duration: 0.2 });
+        gsap.to(hoveredCard.material.uniforms.uHover, { value: 0.0, duration: 0.2 });
+        hoveredCard = null;
+        document.body.style.cursor = 'default';
+      }
+
+      // ANIMATION 4: Roller-Coaster Velocity Banking Tilt & Positioning
+      const bankTiltZ = -wobbleLag * 0.36; // Leans sideways into curve
+      const bankPitchX = wobbleLag * 0.16; // Pitches forward/backward
 
       cards.forEach((card, index) => {
         const slot =
@@ -683,14 +1163,33 @@
           cardCount / 2;
 
         const angle = slot * settings.angleGap + Math.PI / 2;
+        const r = metrics.spiralRadius * THREE.MathUtils.lerp(0.12, 1.0, introProgress.value);
+        const vGap = metrics.spiralVGap * THREE.MathUtils.lerp(0.12, 1.0, introProgress.value);
 
-        card.position.set(
-          Math.cos(angle) * settings.radius,
-          slot * settings.verticalGap,
-          Math.sin(angle) * settings.radius
-        );
+        const spiralX = Math.cos(angle) * r;
+        const spiralY = slot * vGap;
+        const spiralZ = Math.sin(angle) * r;
+        const spiralRotY = Math.PI / 2 - angle;
 
-        card.rotation.y = Math.PI / 2 - angle;
+        if (card === focusedCard) {
+          // Responsive perfect fit blend: guaranteed to fit on phone or desktop
+          card.position.x = THREE.MathUtils.lerp(spiralX, 0, focusWeight.value);
+          card.position.y = THREE.MathUtils.lerp(spiralY, metrics.focusTargetY, focusWeight.value);
+          card.position.z = THREE.MathUtils.lerp(spiralZ, metrics.targetFocusZ, focusWeight.value);
+
+          card.rotation.x = THREE.MathUtils.lerp(bankPitchX, 0, focusWeight.value);
+          card.rotation.y = THREE.MathUtils.lerp(spiralRotY, 0, focusWeight.value);
+          card.rotation.z = THREE.MathUtils.lerp(bankTiltZ, 0, focusWeight.value);
+
+          const targetScale = THREE.MathUtils.lerp(card.userData.hoverScale.value, metrics.focusScale, focusWeight.value);
+          card.scale.set(targetScale, targetScale, targetScale);
+        } else {
+          card.position.set(spiralX, spiralY, spiralZ);
+          card.rotation.set(bankPitchX, spiralRotY, bankTiltZ);
+
+          const s = introProgress.value * card.userData.hoverScale.value;
+          card.scale.set(s, s, s);
+        }
       });
 
       // Update active photo counter in UI
@@ -707,12 +1206,16 @@
     // =====================================
 
     function resize() {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      camera.aspect = width / height;
 
-      camera.aspect = innerWidth / innerHeight;
-
+      const metrics = getResponsiveMetrics();
+      camera.fov = metrics.cameraFov;
+      camera.position.z = metrics.cameraBaseZ;
       camera.updateProjectionMatrix();
 
-      renderer.setSize(innerWidth, innerHeight, false);
+      renderer.setSize(width, height, false);
     }
 
     resize();
