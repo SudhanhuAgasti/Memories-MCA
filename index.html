@@ -753,7 +753,7 @@
       cardWidth: 1.35,
       cardHeight: 1.8,
       cardRadius: 0.08, // Rounded corners radius
-      idleSpin: 0.008,
+      idleSpin: -0.008,
       scrollSensitivity: 0.004,
       smoothing: 0.09,
       wobbleStrength: 0.28,
@@ -990,16 +990,16 @@
 
       if (aspect < 0.52) {
         // Tall skinny phones (iPhone portrait, Galaxy)
-        cameraFov = 38;
-        cameraBaseZ = 12.2;
+        cameraFov = 37;
+        cameraBaseZ = 9.6;
       } else if (aspect < 0.75) {
         // Standard phone portrait & mini tablets
         cameraFov = 36;
-        cameraBaseZ = 11.0;
+        cameraBaseZ = 9.0;
       } else if (aspect < 1.1) {
         // Square-ish tablets / iPad portrait
         cameraFov = 35;
-        cameraBaseZ = 9.2;
+        cameraBaseZ = 8.6;
       } else {
         // Desktop / Laptop landscape
         cameraFov = 35;
@@ -1008,10 +1008,13 @@
 
       // Restore original generous gaps and spacing (no overlapping / sticking together)
       const spiralRadius = settings.radius;
-      const spiralVGap = settings.verticalGap;
+      const spiralVGap = isMobile ? 0.98 : settings.verticalGap;
+
+      // Base card size multiplier on mobile so photos are prominent and clear
+      const baseCardScale = isMobile ? (isSmallMobile ? 1.25 : 1.20) : 1.0;
 
       // Inspection Zoom Parameters:
-      const targetFocusZ = isMobile ? (cameraBaseZ - 6.2) : (cameraBaseZ - 4.2);
+      const targetFocusZ = isMobile ? (cameraBaseZ - 5.6) : (cameraBaseZ - 4.2);
       const focusDist = cameraBaseZ - targetFocusZ;
 
       // Exact mathematical frustum at focus plane
@@ -1020,12 +1023,12 @@
       const visibleWidth = visibleHeight * aspect;
 
       // Auto-fit photo inside mobile/desktop screen with perfect margins
-      const maxScaleW = (visibleWidth * (isMobile ? (isSmallMobile ? 0.84 : 0.80) : 0.74)) / settings.cardWidth;
-      const maxScaleH = (visibleHeight * (isMobile ? 0.58 : 0.76)) / settings.cardHeight;
+      const maxScaleW = (visibleWidth * (isMobile ? (isSmallMobile ? 0.90 : 0.88) : 0.74)) / settings.cardWidth;
+      const maxScaleH = (visibleHeight * (isMobile ? 0.70 : 0.76)) / settings.cardHeight;
       const focusScale = Math.min(maxScaleW, maxScaleH);
 
       // On mobile, position photo slightly higher so it never covers the Close button
-      const focusTargetY = isMobile ? (isSmallMobile ? 0.44 : 0.34) : 0.0;
+      const focusTargetY = isMobile ? (isSmallMobile ? 0.36 : 0.28) : 0.0;
 
       return {
         aspect,
@@ -1035,6 +1038,7 @@
         cameraBaseZ,
         spiralRadius,
         spiralVGap,
+        baseCardScale,
         targetFocusZ,
         focusScale,
         focusTargetY
@@ -1219,7 +1223,7 @@ function playTick() {
         if (isZoomed) return; // Prevent spinning while inspecting card
         const isTouch = self.event && self.event.type && self.event.type.startsWith('touch');
         const sensitivity = isTouch ? 0.0034 : settings.scrollSensitivity;
-        state.rotationTarget += self.deltaY * sensitivity;
+        state.rotationTarget -= self.deltaY * sensitivity;
       },
     });
 
@@ -1304,13 +1308,14 @@ function playTick() {
           card.rotation.y = THREE.MathUtils.lerp(spiralRotY, 0, focusWeight.value);
           card.rotation.z = THREE.MathUtils.lerp(bankTiltZ, 0, focusWeight.value);
 
-          const targetScale = THREE.MathUtils.lerp(card.userData.hoverScale.value, metrics.focusScale, focusWeight.value);
+          const baseS = card.userData.hoverScale.value * metrics.baseCardScale;
+          const targetScale = THREE.MathUtils.lerp(baseS, metrics.focusScale, focusWeight.value);
           card.scale.set(targetScale, targetScale, targetScale);
         } else {
           card.position.set(spiralX, spiralY, spiralZ);
           card.rotation.set(bankPitchX, spiralRotY, bankTiltZ);
 
-          const s = introProgress.value * card.userData.hoverScale.value;
+          const s = introProgress.value * card.userData.hoverScale.value * metrics.baseCardScale;
           card.scale.set(s, s, s);
         }
       });
